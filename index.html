@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>VibroScape Game</title>
+    <style>
+        body, html {
+            margin: 0; padding: 0;
+            width: 100%; height: 100%;
+            background-color: black; /* No visuals needed */
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        #status { color: #222; font-family: sans-serif; pointer-events: none; }
+    </style>
+</head>
+<body>
+
+    <div id="status">Tap to Start</div>
+
+    <script>
+        let targetX, targetY;
+        let winRange = 50; // Pixels close to win
+        let gameActive = false;
+
+        // Initialize Game
+        function initGame() {
+            targetX = Math.random() * window.innerWidth;
+            targetY = Math.random() * window.innerHeight;
+            gameActive = true;
+            document.getElementById('status').innerText = "Find the Pulse";
+            // Start a small vibration to signal start
+            navigator.vibrate(200);
+        }
+
+        // Listen for touch movement
+        window.addEventListener('touchstart', (e) => {
+            if (!gameActive) initGame();
+        });
+
+        window.addEventListener('touchmove', (e) => {
+            if (!gameActive) return;
+            
+            let touch = e.touches[0];
+            handleInteraction(touch.clientX, touch.clientY);
+        });
+
+        // For Laptop/Mouse testing
+        window.addEventListener('mousemove', (e) => {
+            if (gameActive) handleInteraction(e.clientX, e.clientY);
+        });
+
+        function handleInteraction(x, y) {
+            let dx = x - targetX;
+            let dy = y - targetY;
+            let distance = Math.sqrt(dx*dx + dy*dy);
+
+            if (distance < winRange) {
+                // WIN STATE: Constant Vibration
+                navigator.vibrate(1000);
+                gameActive = false;
+                setTimeout(initGame, 3000); // Restart after 3 seconds
+            } else if (distance < 200) {
+                // HOT: Fast pulses
+                navigator.vibrate([100, 50, 100]);
+            } else if (distance < 400) {
+                // WARM: Slow pulses
+                navigator.vibrate([50, 200]);
+            } else {
+                // COLD: No vibration
+                navigator.vibrate(0);
+            }
+        }
+    </script>
+</body>
+</html>
